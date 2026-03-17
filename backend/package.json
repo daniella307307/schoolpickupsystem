@@ -1,0 +1,19 @@
+{
+  "name": "schoolpickupsystem",
+  "version": "1.0.0",
+  "description": "this si a platform to alert the school that parents are here to pick up the ki",
+  "main": "app.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daniella307307/schoolpickupsystem.git"
+  },
+  "author": "daniella",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/daniella307307/schoolpickupsystem/issues"
+  },
+  "homepage": "https://github.com/daniella307307/schoolpickupsystem#readme"
+}
