@@ -89,7 +89,9 @@ const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ where: { email } });
-        if (!user || user.password !== password) {
+        const db_password = user ? user.password : null;
+        const isMatch = await bcrypt.compare(password,db_password);
+        if (!user || !isMatch) {
             logger.warn(`Invalid login attempt: ${email}`);
             return res.status(401).json({ error: 'Invalid email or password' });
         }
@@ -105,28 +107,97 @@ const loginUser = async (req, res) => {
 //Register user
 const registerUser = async (req, res) => {
     try {
-        const { username, email, password,role = 'parent' } = req.body;
+        const { username, email, password, phone, role } = req.body;
+
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
-            logger.warn(`User already exists: ${email}`);
             return res.status(400).json({ error: 'User already exists' });
         }
-        const hashedPassword = await bcrypt.hash(password, 10); // Implement hashing in production
-        const newUser = await User.create({ username, email, password: hashedPassword, role, phone });
-        const token = jwt.sign({ id: newUser.id, email: newUser.email, role: newUser.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
-        await sendEmai(
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = await User.create({
+            username,
+            email,
+            password: hashedPassword,
+            role,
+            phone
+        });
+
+        const token = jwt.sign(
+            { id: newUser.id, email: newUser.email, role: newUser.role },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
+
+        await sendEmail(
             email,
             'Welcome to Bright Angels',
-            `Hello ${username},\n\nThank you for registering at Bright Angels. We're excited to have you on board!\n\nBest regards,\nBright Angels Team`
-            `This is system is supposed to help u notify us about when u want to pick up ur kid so that everything is ready when u get here. We also have a feature that allows u to notify us if ur kid is sick and won't be coming to school. We hope this system will make things easier for u and help us provide better care for ur kid.`
-        ).catch(error => {
-            logger.error(`Error sending welcome email: ${error.message}`);
-        });
-        logger.info(`User registered: ${newUser.username}`);
+            `Hello ${username},
+
+Thank you for registering at Bright Angels. We're excited to have you on board!
+
+This system helps you notify us when picking up your child and reporting absences.
+
+Best regards,
+Bright Angels Team`
+        );
+
         res.status(201).json({ user: newUser, token });
+
     } catch (error) {
         logger.error(`Error registering user: ${error.message}`);
         res.status(500).json({ error: 'Failed to register user' });
+    }
+};
+
+const sendWelcomeEmail = async (email, username) => {
+    try {
+        await sendEmail(
+            email,
+            'Welcome to Bright Angels',
+            `Hello ${username},
+Thank you for registering at Bright Angels. We're excited to have you on board!
+This system helps you notify us when picking up your child and reporting absences.
+Best regards,
+Bright Angels Team`
+        );
+        logger.info(`Welcome email sent to: ${email}`);
+    }
+    catch (error) {
+        logger.error(`Error sending welcome email: ${error.message}`);
+    }
+};
+
+const sendPasswordResetEmail = async (email, token) => {
+    try {
+        await sendEmail(
+            email,
+            'Password Reset Request',
+            `You requested a password reset. Use the following token to reset your password: ${token}`
+        );
+        logger.info(`Password reset email sent to: ${email}`);
+    }
+    catch (error) {
+        logger.error(`Error sending password reset email: ${error.message}`);
+    }
+};
+
+const verifyEmail = async (req, res) => {
+    try {
+        const { token } = req.query;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findByPk(decoded.id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        user.isVerified = true;
+        await user.save();
+        logger.info(`Email verified for user: ${user.username}`);
+        res.status(200).json({ message: 'Email verified successfully' });
+    } catch (error) {
+        logger.error(`Error verifying email: ${error.message}`);
+        res.status(500).json({ error: 'Failed to verify email' });
     }
 };
 
