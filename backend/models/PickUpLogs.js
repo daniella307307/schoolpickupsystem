@@ -1,13 +1,13 @@
-const { Datatypes } = require('sequelize');
+const { DataTypes } = require('sequelize');
 const sequelize = require('../configs/db');
 const PickUpLogs = sequelize.define('PickUpLogs', {
     id: {
-        type: Datatypes.INTEGER,
+        type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true
     },
     pickup_request_id: {
-        type: Datatypes.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false,
         references: {
             model: 'PickUps',
@@ -15,16 +15,16 @@ const PickUpLogs = sequelize.define('PickUpLogs', {
         }
     },
     action: {
-        type: Datatypes.ENUM('created', 'approved', 'rejected'),
+        type: DataTypes.ENUM('created', 'approved', 'rejected'),
         allowNull: false
     },
     timestamp: {
-        type: Datatypes.DATE,
+        type: DataTypes.DATE,
         allowNull: false,
-        defaultValue: Datatypes.NOW
+        defaultValue: DataTypes.NOW
     },
     performed_by:{
-        type: Datatypes.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false,
         references: {
             model: 'Users',
@@ -34,3 +34,4 @@ const PickUpLogs = sequelize.define('PickUpLogs', {
 }, {
     timestamps: false
 });
+module.exports = PickUpLogs;

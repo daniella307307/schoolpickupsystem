@@ -5,12 +5,14 @@ const logger = require('./configs/logger');
 const sequelize = require('./configs/db');
 require('dotenv').config();
 const userRoutes = require('./routes/userRoute');
-
-
+const studentRoutes = require('./routes/studentsRoute');
+const pickUpRoutes = require('./routes/pickupRoute');
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/', userRoutes);
+app.use('/students', studentRoutes);
+app.use('/pickups', pickUpRoutes);
 const PORT = process.env.PORT || 5000;
 
 

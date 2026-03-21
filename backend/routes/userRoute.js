@@ -1,5 +1,5 @@
 const express = require('express');
-const {registerUser, loginUser,verifyEmail, updatePassword, updateUser,sendPasswordResetEmail, deleteUser, getAllUsers,getUserById } = require('../controllers/userController');
+const {registerUser, loginUser,verifyEmail, updatePassword, updateUser,sendPasswordResetEmail, deleteUser, getAllUsers,getUserById, getParents } = require('../controllers/userController');
 const { verifyToken, authorizeRole } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -22,4 +22,6 @@ router.delete('/:id',verifyToken,authorizeRole("admin"),deleteUser);
 router.get('/users',verifyToken,authorizeRole("admin"), getAllUsers);
 // Get user by ID
 router.get('/:id',verifyToken, getUserById);
+//GET ALL PArents
+router.get('/parents', verifyToken, authorizeRole("admin"), getParents);
 module.exports = router;

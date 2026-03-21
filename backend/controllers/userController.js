@@ -104,6 +104,18 @@ const loginUser = async (req, res) => {
     }
 };
 
+const getParents = async (req, res) => {
+    try {
+        const parents = await User.findAll({ where: { role: 'parent' } });
+        logger.info(`Fetched parents: ${parents.length}`);
+        res.status(200).json(parents);
+    } catch (error) {
+        logger.error(`Error fetching parents: ${error.message}`);
+        res.status(500).json({ error: 'Failed to fetch parents' });
+    }
+};
+
+
 //Register user
 const registerUser = async (req, res) => {
     try {
@@ -260,5 +272,6 @@ module.exports = {
     sendWelcomeEmail,
     sendPasswordResetEmail,
     verifyEmail,
-    updatePassword
+    updatePassword,
+    getParents
 };

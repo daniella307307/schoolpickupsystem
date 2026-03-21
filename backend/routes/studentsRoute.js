@@ -1,5 +1,5 @@
 const express = require('express');
-const { createStudent, getAllStudents, getStudentById, updateStudent, deleteStudent,getStudentsByParentId, createStudents } = require('../controllers/studentController');
+const { createStudent, getAllStudents, getStudentById, updateStudent, deleteStudent,getStudentsByParentId, createStudents, deleteStudents, deleteStudentsByParentId } = require('../controllers/studentsController');
 const { verifyToken, authorizeRole } = require('../middleware/authMiddleware');
 const router = express.Router();
 
@@ -17,4 +17,8 @@ router.delete('/:id', verifyToken, authorizeRole('admin'), deleteStudent);
 router.get('/parent/:parentId', verifyToken, getStudentsByParentId);
 //Bulk create students
 router.post('/bulk', verifyToken, authorizeRole('admin'), createStudents);
+//Delete students by parent ID
+router.delete('/parent/:parentId', verifyToken, authorizeRole('admin'), deleteStudentsByParentId);
+//Delete students by IDs
+router.delete('/', verifyToken, authorizeRole('admin'), deleteStudents);
 module.exports = router;

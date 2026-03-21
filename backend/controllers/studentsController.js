@@ -92,7 +92,7 @@ const getStudentsByParentId = async (req, res) => {
 };
 const createStudents = async (req, res) => {
     try {
-        const studentsData = req.body.students; // Expecting an array of student objects
+        const studentsData = req.body.students|| req.body; // Expecting an array of student objects
         const createdStudents = await Student.bulkCreate(studentsData);
         logger.info(`Bulk created ${createdStudents.length} students`);
         res.status(201).json(createdStudents);
@@ -101,5 +101,27 @@ const createStudents = async (req, res) => {
         res.status(500).json({ error: 'Failed to create students' });
     }
 };
+const deleteStudentsByParentId = async (parentId) => {
+    try {
+        const deletedCount = await Student.destroy({ where: { parent_id: parentId } });
+        logger.info(`Deleted ${deletedCount} students for parent ID: ${parentId}`);
+        res.status(200).json({ message: `${deletedCount} students deleted successfully` });
+    }
+    catch (error) {
+        logger.error(`Error deleting students by parent ID: ${error.message}`);
+        res.status(500).json({ error: 'Failed to delete students' });
+        throw error;
+    }
+};
+const deleteStudents= async (req, res) => {
+    try {        const studentIds = req.body.studentIds; // Expecting an array of student IDs
+        const deletedCount = await Student.destroy({ where: { id: studentIds } });
+        logger.info(`Deleted ${deletedCount} students with IDs: ${studentIds.join(', ')}`);
+        res.status(200).json({ message: `${deletedCount} students deleted successfully` });
+    } catch (error) {
+        logger.error(`Error deleting students: ${error.message}`);
+        res.status(500).json({ error: 'Failed to delete students' });
+    }
+};
 
-module.exports = { createStudent, getAllStudents, getStudentById, updateStudent, deleteStudent,getStudentsByParentId, createStudents };
+module.exports = { createStudent, getAllStudents, getStudentById, updateStudent, deleteStudent,getStudentsByParentId, createStudents, deleteStudentsByParentId, deleteStudents };
