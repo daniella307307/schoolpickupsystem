@@ -8,7 +8,7 @@ router.post('/', verifyToken, authorizeRole('parent'), createPickup);
 // Get pending pickups for a parent
 router.get('/pending', verifyToken, getPendingPickups);
 // Update a pickup
-router.put('/:id', verifyToken, authorizeRole('admin'), updatePickupStatus);
+router.put('/:id', verifyToken, authorizeRole('staff'), updatePickupStatus);
 // Get notifications for a parent
 router.get('/notifications', verifyToken, getNotifications);
 module.exports = router;
