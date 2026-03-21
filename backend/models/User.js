@@ -22,13 +22,30 @@ const User = sequelize.define('User', {
         allowNull: false
     },
     role: {
-        type: DataTypes.ENUM('admin', 'parent','staff' ),
+        type: DataTypes.ENUM('admin', 'parent','staff','student'),
         defaultValue: 'parent'
     },
     phone:{
         type: DataTypes.STRING,
         allowNull: false
+    },
+    isVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false 
+    },
+    verificationToken: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    resetPasswordToken: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    resetPasswordExpires: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
+    
 }, {
     timestamps: true
 });

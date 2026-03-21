@@ -169,17 +169,65 @@ Bright Angels Team`
     }
 };
 
-const sendPasswordResetEmail = async (email, token) => {
+const sendPasswordResetEmail = async (req, res) => {
+    const { email } = req.body;
+
     try {
+        const user = await User.findOne({ where: { email } });
+
+        // Always respond the same (security)
+        if (!user) {
+            logger.warn(`Password reset requested for non-existent email: ${email}`);
+            return res.status(200).json({
+                message: "If this email exists, a reset link has been sent."
+            });
+        }
+
+        const token = jwt.sign(
+            { id: user.id, email: user.email },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+        user.resetPasswordToken = token;
+        user.resetPasswordExpires = Date.now() + 3600000;
+        const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+
         await sendEmail(
             email,
             'Password Reset Request',
-            `You requested a password reset. Use the following token to reset your password: ${token}`
+            `Click the link below to reset your password:\n\n${resetLink}`
         );
+
         logger.info(`Password reset email sent to: ${email}`);
-    }
-    catch (error) {
+
+        return res.status(200).json({
+            message: "If this email exists, a reset link has been sent."
+        });
+
+    } catch (error) {
         logger.error(`Error sending password reset email: ${error.message}`);
+        return res.status(500).json({
+            message: "Something went wrong. Please try again."
+        });
+    }
+};
+
+const updatePassword = async (req, res) => {
+    const { token, newPassword } = req.body;
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findByPk(decoded.id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+        logger.info(`Password updated for user: ${user.username}`);
+        res.status(200).json({ message: 'Password updated successfully' });
+    } catch (error) {
+        logger.error(`Error updating password: ${error.message}`);
+        res.status(500).json({ error: 'Failed to update password' });
     }
 };
 
@@ -208,5 +256,9 @@ module.exports = {
     updateUser,
     deleteUser,
     loginUser,
-    registerUser
+    registerUser,
+    sendWelcomeEmail,
+    sendPasswordResetEmail,
+    verifyEmail,
+    updatePassword
 };
